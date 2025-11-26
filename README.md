@@ -1,28 +1,154 @@
+
 # SFCSyntheticDataGenerator
-## A synthetic data generation system for myalgic encephalomyelitis / chronic fatigue syndrome questionnaires
+
+## A Synthetic Data Generation System for ME/CFS Questionnaires
+
+### 📄 About the Project
+
+This repository hosts the implementation of the synthetic data generation system described in the paper **“A synthetic data generation system for myalgic encephalomyelitis/chronic fatigue syndrome questionnaires”**, published in *Scientific Reports* (Nature Portfolio):
+
+> Lacasa, M., Prados, F., Alegre, J. & Casas-Roma, J.  
+> *A synthetic data generation system for myalgic encephalomyelitis/chronic fatigue syndrome questionnaires.*  
+> Sci Rep 13, 14256 (2023).  
+> https://doi.org/10.1038/s41598-023-40364-6
+
+Myalgic Encephalomyelitis/Chronic Fatigue Syndrome (ME/CFS) is a complex, multisystem illness where large datasets are scarce due to privacy restrictions and the lack of specific biomarkers.  
+This project addresses the data scarcity problem by providing a Deep Learning–based generator that creates high-fidelity, risk-free synthetic patient records for research and education.
+
+### 🔬 Scientific Methodology
+
+The system is based on a prospective cross-sectional study of **2,522 patients** from the Vall d'Hebron Hospital Specialized Unit (Barcelona, Spain). Real patient questionnaire responses were used to train a cascade of models that generate synthetic counterparts.
+
+#### The Cascade Model
+
+The system relies on **graph theory** to determine an optimal order of generation based on the correlation strength between questionnaire subscales. The model requires the **SF-36** questionnaire as input and predicts five other clinical questionnaires in a cascading sequence:
+
+1. **Input:** SF-36 (Short Form Health Survey)
+2. **Step 1:** Predicts **HAD** (Hospital Anxiety and Depression Scale)
+3. **Step 2:** Predicts **SCL-90-R** (Symptom Checklist-90-Revised)
+4. **Step 3:** Predicts **FIS-8** (Fatigue Impact Scale – 8 items)
+5. **Step 4:** Predicts **FIS-40** (Fatigue Impact Scale – 40 items)
+6. **Step 5:** Predicts **PSQI** (Pittsburgh Sleep Quality Index)
+
+The models achieve good performance (typical accuracy in the range 0.69–0.81 in the original paper) and were validated using statistical tests (e.g. Student's t-test) to ensure that synthetic data preserve the statistical properties of the real population.
+
+For full methodological details, please refer to the Scientific Reports article.
+
+---
+
+### ⚠️ IMPORTANT: Accessing the Model Weights
+
+**The pre-trained Deep Neural Network models (`.h5` files) required to run this code are not included in this repository.**
+
+Due to GitHub’s file size limits and the large number of models required (one model per question across multiple questionnaires), the weights cannot be hosted here directly.
+
+#### How to get the models
+
+1. **Request access**  
+   The models are hosted externally. You can request access via this link:  
+   👉 [Google Drive Folder](https://drive.google.com/drive/folders/1dgBAP7qYim5MrS-iBoSFDf8LY58AK7mY?usp=sharing)
+
+2. **Permission**  
+   Please contact the author to grant download permissions.
+
+3. **Setup**  
+   Once downloaded, place the `.h5` files in the same directory as the `SyntheticDataGeneratorMESFCpatients.ipynb` script or update the paths in the code accordingly.
+
+---
+
+### 🚀 Usage
+
+#### Prerequisites
+
+You need a Python environment with the following libraries installed:
+
+- `tensorflow`
+- `pandas`
+- `numpy` (implicit in pandas)
+
+```bash
+pip install tensorflow pandas
+````
+
+#### Running the Generator
+
+The core logic is contained within `SyntheticDataGeneratorMESFCpatients.ipynb`.
+The main function `SyntheticDataGeneratorSFC(X, metrics)` takes an input dataframe of SF-36 answers and returns synthetic data for the remaining questionnaires.
+
+**Example code:**
+
+```python
+import pandas as pd
+from tensorflow.keras import metrics
+# Import the functions from the notebook or convert the notebook to a .py file
+# from SyntheticDataGeneratorMESFCpatients import SyntheticDataGeneratorSFC
+
+# 1. Load your SF-36 data (input matrix X)
+# Ensure X has shape (n_patients, 36)
+sf36_input = pd.read_csv('path_to_your_sf36_data.csv')
+
+# 2. Define metrics
+metrics_list = [
+    metrics.Precision(name="precision"),
+    metrics.Recall(name="recall"),
+]
+
+# 3. Generate synthetic data
+# Note: Ensure .h5 model files are in the working directory
+sf36, had, scl90r, fis8, fis40, psqi = SyntheticDataGeneratorSFC(sf36_input, metrics_list)
+
+# 4. Save or inspect results
+print("Generated HAD shape:", had.shape)
+had.to_csv('synthetic_HAD.csv')
+```
+
+---
+
+### 🔮 Roadmap & Future Work
+
+* **Online application:** We are working on a web-based interface to allow researchers to generate synthetic datasets directly in the browser, without downloading heavy model weights or configuring a Python environment.
+* **SF-36 generator:** A fully synthetic SF-36 generator (removing the need for real input data) is currently under validation and will be shared in the future.
+
+---
+
+### 📝 Limitations
+
+* **Single-center data:** All training data come from a single specialized unit (Vall d'Hebron). The synthetic data may therefore reflect a bias toward more severe cases typically seen in specialised care versus primary care.
+* **Demographics:** The underlying cohort may not fully represent non-Caucasian or globally diverse populations.
+* **Cross-sectional design:** The models are based on cross-sectional data, not longitudinal trajectories. Temporal evolution of symptoms and scores is not captured.
+
+---
+
+### 📚 Citation
+
+If you use this software or the synthetic data methodology in your research, please cite the original paper:
+
+> Lacasa, M., Prados, F., Alegre, J. & Casas-Roma, J.
+> **A synthetic data generation system for myalgic encephalomyelitis/chronic fatigue syndrome questionnaires.**
+> *Scientific Reports* **13**, 14256 (2023).
+> [https://doi.org/10.1038/s41598-023-40364-6](https://doi.org/10.1038/s41598-023-40364-6)
+
+---
+
+Perfecto, te dejo una sección **Contact** más completa, lista para pegar en el README. Solo tendrás que sustituir el email por el que quieras usar.
 
 
-There is an increasing demand for artificial intelligence healthcare models. Large health datasets are needed to build these predictive models to help other investigators to find new treatments or to deliver individualized healthcare interventions. However, it is not easy to share health data and gather large datasets, since there are issues concerning patient privacy to be accounted for and restricted law protects from sharing any personal data between investigators. 
+### ✉️ Contact
 
-Our objective is to create an open-source generator of high-fidelity synthetic data for investigation and educational use, and free of legal, privacy and security restrictions. As a proof-of-concept, we will apply it to chronic fatigue syndrome (CFS) questionnaire generation. 
+If you have questions about the code, encounter bugs, or would like to propose improvements, please:
 
-We used six questionnaires from 2522 CFS diagnosed patients. each test has between 8 to 90 questions with 3-5 ordered options. These have fed forward Network algorithms to create a synthetic data generator. SF-36 questionnaire is considered commonly used for patients with CFS symptomatology and is required as input data. 
+1. **Open a GitHub Issue** in this repository, describing:
+   - The context (what you were trying to do)
+   - The exact error message (if any)
+   - A minimal code snippet or screenshot, if relevant
 
-Real data of all of six questionnaires are required to train and build the models. It is processed in different steps. Each of them is made up of an input array and a target array. In each step, the previous result is added to the input matrix, obtaining synthetic data from each cascade test. The order of the tests in the steps is defined by the result of the graph analysis. This analysis is performed based on the subscales of the tests to optimize the results based on the relationship we obtain. The models achieve 0.69 - 0.81 rank accuracy to predict HAD, SCL 90 R, FIS8, FIS40 and PSQI questionnaires. The t-student has used as validated metric to test how are similar artificial data to real. The rank results were 0.18-0.85 as p-value.
+2. **For access to model weights or collaboration inquiries**, you can contact the corresponding author of the paper:
 
-Synthetic patients can be efficiently generated using models of CFS questionnaires to produce risk-free realistic synthetic health care records at any scale. Synthetic patients can be simulated with models of ME/CFS questionnaires data and corresponding standards of care to produce risk-free realistic synthetic health care records at scale.
+**Dr. Marcos Lacasa Cazcarra**  
+Data Scientist, Faculty of Health Sciences  
+Universidad Internacional de La Rioja (UNIR), Spain  
+Research collaborator, ME/CFS Unit, Vall d’Hebron University Hospital (Barcelona, Spain)  
 
-## How to use
 
-There is the code you must use to generate synthetic data generator.
-You can use your SF-36 questionnaire dataset and predict HAD, SCL90R, FI8, FIS40 and PSQI validated and free to use and share.
-I will share a synthetic SF-36 validated in next future.
-You need the models h5 files, I could not share for space limits. You have to ask me permission to access.
-The link I store the models is: https://drive.google.com/drive/folders/1dgBAP7qYim5MrS-iBoSFDf8LY58AK7mY?usp=sharing
-Please, contact me to ask me permission.
 
-### Limitations
-All the patients come from the specialized chronic fatigue unit of the Vall D'Hebrón University Hospital in Barcelona. Being able to count on more data from patients from other units with similar protocols could enrich this work. Shared synthetic data may not represent reality for some non-Caucasian populations. More studies are required to find out differences in CFS patients to validate this work.
-
-Synthetic patients can be simulated with models of ME/CFS questionnaires data and corresponding standards of care to produce risk-free realistic synthetic health care records at scale. We offer an open-source generator of high-fidelity synthetic data for investigation and educational use, and free of legal, privacy, security and intellectual property restrictions. 
 
